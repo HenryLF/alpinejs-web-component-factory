@@ -32,7 +32,7 @@
     x-data="{payload : {text:'HAHA' , num : 2}}"
     class="flex flex-col items-center justify-center"
   >
-    <wc-test x-model="payload" @input="console.log('input',$el.value)">
+    <wc-test x-model="payload">
       <h1 slot="header" x-text=" 'Inner text display: ' +  payload.text">
         Head
       </h1>
@@ -40,7 +40,10 @@
         Head
       </h1>
       <div slot="content">
-        <p>All the blue fiel</p>
+        <p>
+          All the blue fields are in the main scope (light DOM). The red fields
+          are in the components (shadow DOM).
+        </p>
       </div>
     </wc-test>
 

@@ -1,6 +1,4 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+import Alpine from "alpinejs";
 export function wcFactory(name, template) {
   let temp;
   if (typeof template === "string") {
@@ -10,15 +8,16 @@ export function wcFactory(name, template) {
     temp = template;
   }
   class CustomElement extends HTMLElement {
+    root;
+    value;
+    state;
+    masterUpdate = false;
+    static observedAttributes = ["val"];
     constructor() {
       super();
-      __publicField(this, "root");
-      __publicField(this, "value");
-      __publicField(this, "state");
-      __publicField(this, "masterUpdate", false);
       this.root = this.attachShadow({ mode: "open" });
       const model = this.getAttribute("x-model");
-      model && this.setAttribute(":val", "JSON.stringify(".concat(model, ")"));
+      model && this.setAttribute(":val", `JSON.stringify(${model})`);
       const updateModel = () => {
         this.dispatchEvent(new Event("input"));
       };
@@ -32,7 +31,7 @@ export function wcFactory(name, template) {
           firstRun = false;
           return;
         }
-        this.value = this.state.data;
+        this.value = Alpine.raw(this.state.data);
         updateModel();
       });
     }
@@ -47,6 +46,5 @@ export function wcFactory(name, template) {
       Alpine.initTree(this.root);
     }
   }
-  __publicField(CustomElement, "observedAttributes", ["val"]);
   customElements.define(name, CustomElement);
 }

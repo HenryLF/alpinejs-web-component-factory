@@ -39,7 +39,7 @@ export function wcFactory(
           return;
         }
 
-        this.value = this.state.data;
+        this.value = Alpine.raw(this.state.data);
         updateModel();
       });
     }
