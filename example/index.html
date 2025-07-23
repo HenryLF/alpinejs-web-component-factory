@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script type="module" src="./index.js"></script>
+    <style>
+      * {
+        color: black;
+      }
+
+      h1 {
+        background-color: blue;
+      }
+      section {
+        background-color: blue;
+        border: 2px solid black;
+        border-radius: 1rem;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        height: 20vh;
+      }
+
+      fieldset {
+        height: fit-content;
+      }
+    </style>
+  </head>
+  <body
+    x-data="{payload : {text:'HAHA' , num : 2}}"
+    class="flex flex-col items-center justify-center"
+  >
+    <wc-test x-model="payload" @input="console.log('input',$el.value)">
+      <h1 slot="header" x-text=" 'Inner text display: ' +  payload.text">
+        Head
+      </h1>
+      <h1 slot="header" x-text=" 'Inner number display: ' +  payload.num">
+        Head
+      </h1>
+      <div slot="content">
+        <p>All the blue fiel</p>
+      </div>
+    </wc-test>
+
+    <section>
+      <fieldset>
+        <label for="">Outter Text Input:</label>
+        <input x-model="payload.text" type="text" name="out1" />
+      </fieldset>
+      <fieldset>
+        <label for="out2">Outter Number Input:</label>
+        <input x-model="payload.num" type="number" name="out2" />
+      </fieldset>
+    </section>
+  </body>
+</html>

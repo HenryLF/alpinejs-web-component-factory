@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@types/alpinejs": "^3.13.11",
+    "alpinejs": "^3.14.9",
+    "esbuild": "^0.25.8",
+    "typescript": "^5.8.3"
+  }
+}
