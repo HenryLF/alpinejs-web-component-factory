@@ -3512,7 +3512,7 @@ background-color: red;    }
       console.log(this.k);
     },
     increment() {
-      console.log("hey", this.$component, this.k);
+      console.log("hey", this.$component.attributes, this.k);
       this.$val++;
     }
   }));
