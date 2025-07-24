@@ -6,18 +6,21 @@
     <title>Document</title>
     <script type="module" src="./index.js"></script>
     <style>
-      * {
+      body {
         color: black;
+        --color-components: rgb(96, 96, 221);
+      }
+      section,
+      h1,
+      section > * {
+        background-color: var(--color-components);
       }
 
-      h1 {
-        background-color: blue;
-      }
       section {
-        background-color: blue;
         border: 2px solid black;
         border-radius: 1rem;
         display: flex;
+        flex-direction: column;
         justify-content: space-evenly;
         align-items: center;
         height: 20vh;
@@ -28,34 +31,41 @@
       }
     </style>
   </head>
-  <body
-    x-data="{payload : {text:'HAHA' , num : 2}}"
-    class="flex flex-col items-center justify-center"
-  >
-    <wc-test x-model="payload">
-      <h1 slot="header" x-text=" 'Inner text display: ' +  payload.text">
-        Head
-      </h1>
-      <h1 slot="header" x-text=" 'Inner number display: ' +  payload.num">
-        Head
-      </h1>
+  <body x-data="data" :style="{'--color-components' : color}">
+    <wc-test x-model="{text , num}">
+      <section slot="header">
+        <h1 x-text=" 'Outter text display: ' +  text">Head</h1>
+        <br />
+        <h1 slot="header" x-text=" 'Outter number display: ' +  num">Head</h1>
+      </section>
       <div slot="content">
-        <p>
-          All the blue fields are in the main scope (light DOM). The red fields
-          are in the components (shadow DOM).
+        <p :style="{backgroundColor: color}">
+          All the colored fields (<span x-text="color"></span>) are in the main
+          scope (light DOM). The red fields are in the components (shadow DOM).
         </p>
       </div>
     </wc-test>
 
     <section>
       <fieldset>
-        <label for="">Outter Text Input:</label>
-        <input x-model="payload.text" type="text" name="out1" />
+        <label for="out1">Outter Text Input:</label>
+        <input x-model="text" type="text" name="out1" />
       </fieldset>
       <fieldset>
         <label for="out2">Outter Number Input:</label>
-        <input x-model="payload.num" type="number" name="out2" />
+        <input x-model="num" type="number" name="out2" />
       </fieldset>
     </section>
+    <p>
+      This example illustrate how you can pass data throught the x-model API
+    </p>
+
+    <wc-shuffle x-model="text"> </wc-shuffle>
+    <color-picker
+      x-model="color"
+      style="display: inline-block; width: 50px; aspect-ratio: 1/1"
+    ></color-picker>
+
+    <custom-input x-model="num"></custom-input>
   </body>
 </html>

@@ -1,15 +1,15 @@
 import { build } from "esbuild";
 
 const config = {
-  entryPoints: ["src/wcFactory.ts"],
+  entryPoints: ["src/WebComponentFactory.ts"],
 };
 await build({
-  outfile: "dist/wcFactory.js",
+  outfile: "dist/WebComponentFactory.js",
   minify: false,
   ...config,
 });
 await build({
-  outfile: "dist/wcFactory.min.js",
+  outfile: "dist/WebComponentFactory.min.js",
   minify: true,
   ...config,
 });

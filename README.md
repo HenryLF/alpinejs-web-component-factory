@@ -1,103 +1,111 @@
-# Alpine.js Web Components Factory
+# Alpine Web Component Factory
 
-
-A lightweight utility for creating Alpine.js-powered Web Components that maintain full `x-model` compatibility and slot support.
+This library provides a simple way to create Web Components that work seamlessly with Alpine.js' `x-model` directive, enabling two-way data binding between your components and Alpine.js applications.
 
 ## Features
 
-- 🔌 **Seamless Alpine Integration** - Full `x-model` two-way binding support
-- 🧩 **Native Web Components** - Works with standard `<slot>` system
-- 📦 **Single File Solution** - Zero dependencies beyond Alpine.js
-- 🔥 **Reactive Data Flow** - Automatic JSON serialization/deserialization
-- 💡 **Template Flexibility** - Accepts HTML strings or `<template>` elements
+- �‍ **Shadow DOM integration** - Components are encapsulated in Shadow DOM
+- 🔁 **Bi-directional data binding** - Works with Alpine's `x-model`
+- 💡 **Reactive state management** - Powered by Alpine's reactivity system
+- 🧩 **Slot support** - Use named slots for content composition
+- 🎨 **CSS encapsulation** - Scoped styles for components
 
 ## Installation
 
-1. Install dependencies:
+Include the library in your project:
+
 ```bash
-npm install alpinejs
-```
-
-2. Import the factory in your project:
-```javascript
-import { wcFactory } from './wc-factory.js';
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-Alpine.start();
+npm install alpine-web-component-factory
 ```
 
 ## Usage
 
-### 1. Create Component Template
+### Creating a Component
+
 ```javascript
-const html = /*html*/ `
-<section>
+import { WebComponentFactory } from 'alpine-web-component-factory';
+
+const template = `
   <style>
-    :host { display: block; }
-    fieldset { margin: 1rem; }
+    /* Component styles */
+    button {
+      background: blue;
+      color: white;
+    }
   </style>
-  
-  <slot name="header"></slot>
-  
-  <fieldset>
-    <input type="text" x-model="data.text">
-    <span x-text="data.text"></span>
-  </fieldset>
-</section>
+  <button @click="increment">
+    Count: <span x-text="count"></span>
+  </button>
 `;
+
+WebComponentFactory('counter-button', template, () => ({
+  count: 0,
+  increment() {
+    this.count++;
+    this.$val = this.count; // Update bound value
+  }
+}));
 ```
 
-### 2. Register Component
-```javascript
-wcFactory("my-component", html);
-```
-
-### 3. Use in HTML
-```html
-<my-component x-model="appData">
-  <h1 slot="header">My Reactive Component</h1>
-</my-component>
-```
-
-## Advanced Example
-```javascript
-// Component definition
-wcFactory("data-form", /*html*/ `
-<section>
-  <slot name="title"></slot>
-  
-  <input type="range" x-model="data.value" min="0" max="100">
-  <output x-text="data.value"></output>
-</section>
-`);
-```
+### Using in HTML
 
 ```html
-<!-- Implementation -->
-<data-form x-model="userSettings">
-  <h2 slot="title">Settings Panel</h2>
-</data-form>
-
-<script>
-document.addEventListener('alpine:init', () => {
-  Alpine.data('app', () => ({
-    userSettings: { value: 50 }
-  }))
-});
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script type="module" src="/path/to/your/component.js"></script>
+</head>
+<body x-data="{ count: 0 }">
+  <counter-button x-model="count"></counter-button>
+  <p>Current count: <span x-text="count"></span></p>
+</body>
+</html>
 ```
 
-## How It Works
+## API
 
-The factory creates custom elements that:
-1. Parse and clone provided templates
-2. Establish reactive Alpine.js context
-3. Sync attributes with internal state via:
-   - Automatic JSON serialization for complex data
-   - Bidirectional `x-model` binding
-   - Slot content projection
-4. Handle shadow DOM encapsulation while maintaining Alpine reactivity
+### `WebComponentFactory(name, template, xDataFactory, ...args)`
 
-## Disclaimer
-As I'm super lazy Deepseek generated this ReadMe. Feel free to as
+- `name`: Custom element name (must contain a hyphen)
+- `template`: HTML string or `<template>` element
+- `xDataFactory`: Function returning Alpine.js reactive state object
+- `...args`: Arguments to pass to the `xDataFactory`
+
+## Examples
+
+### Simple Input Component
+
+```javascript
+const inputTemplate = `
+  <input 
+    type="text" 
+    :value="$val" 
+    @input="$val = $event.target.value"
+  >
+`;
+
+WebComponentFactory('custom-input', inputTemplate);
+```
+
+### Color Picker Component
+
+```javascript
+const colorTemplate = `
+  <div style="display: flex; gap: 10px">
+    <input type="color" :value="$val" @input="$val = $event.target.value">
+    <span x-text="$val"></span>
+  </div>
+`;
+
+WebComponentFactory('color-picker', colorTemplate);
+```
+
+## Benefits
+
+1. **Encapsulation**: Components are self-contained with Shadow DOM
+2. **Reactivity**: Built on Alpine's lightweight reactivity system
+3. **Interoperability**: Works with any framework that supports standard web components
+4. **Progressive Enhancement**: Add interactivity to static HTML
+5. **Lightweight**: No heavy dependencies beyond Alpine.js
+

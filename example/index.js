@@ -263,10 +263,10 @@
   function scope(node) {
     return mergeProxies(closestDataStack(node));
   }
-  function addScopeToNode(node, data2, referenceNode) {
-    node._x_dataStack = [data2, ...closestDataStack(referenceNode || node)];
+  function addScopeToNode(node, data22, referenceNode) {
+    node._x_dataStack = [data22, ...closestDataStack(referenceNode || node)];
     return () => {
-      node._x_dataStack = node._x_dataStack.filter((i) => i !== data2);
+      node._x_dataStack = node._x_dataStack.filter((i) => i !== data22);
     };
   }
   function closestDataStack(node) {
@@ -324,7 +324,7 @@
       return acc;
     }, {});
   }
-  function initInterceptors(data2) {
+  function initInterceptors(data22) {
     let isObject2 = (val) => typeof val === "object" && !Array.isArray(val) && val !== null;
     let recurse = (obj, basePath = "") => {
       Object.entries(Object.getOwnPropertyDescriptors(obj)).forEach(([key, { value, enumerable }]) => {
@@ -334,7 +334,7 @@
           return;
         let path = basePath === "" ? key : `${basePath}.${key}`;
         if (typeof value === "object" && value !== null && value._x_interceptor) {
-          obj[key] = value.initialize(data2, path, key);
+          obj[key] = value.initialize(data22, path, key);
         } else {
           if (isObject2(value) && value !== obj && !(value instanceof Element)) {
             recurse(value, path);
@@ -342,25 +342,25 @@
         }
       });
     };
-    return recurse(data2);
+    return recurse(data22);
   }
   function interceptor(callback, mutateObj = () => {
   }) {
     let obj = {
       initialValue: void 0,
       _x_interceptor: true,
-      initialize(data2, path, key) {
-        return callback(this.initialValue, () => get(data2, path), (value) => set(data2, path, value), path, key);
+      initialize(data22, path, key) {
+        return callback(this.initialValue, () => get(data22, path), (value) => set(data22, path, value), path, key);
       }
     };
     mutateObj(obj);
     return (initialValue) => {
       if (typeof initialValue === "object" && initialValue !== null && initialValue._x_interceptor) {
         let initialize = obj.initialize.bind(obj);
-        obj.initialize = (data2, path, key) => {
-          let innerValue = initialValue.initialize(data2, path, key);
+        obj.initialize = (data22, path, key) => {
+          let innerValue = initialValue.initialize(data22, path, key);
           obj.initialValue = innerValue;
-          return initialize(data2, path, key);
+          return initialize(data22, path, key);
         };
       } else {
         obj.initialValue = initialValue;
@@ -2938,11 +2938,11 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
     injectMagics(magicContext, el);
     let dataProviderContext = {};
     injectDataProviders(dataProviderContext, magicContext);
-    let data2 = evaluate(el, expression, { scope: dataProviderContext });
-    if (data2 === void 0 || data2 === true)
-      data2 = {};
-    injectMagics(data2, el);
-    let reactiveData = reactive(data2);
+    let data22 = evaluate(el, expression, { scope: dataProviderContext });
+    if (data22 === void 0 || data22 === true)
+      data22 = {};
+    injectMagics(data22, el);
+    let reactiveData = reactive(data22);
     initInterceptors(reactiveData);
     let undo = addScopeToNode(el, reactiveData);
     reactiveData["init"] && evaluate(el, reactiveData["init"]);
@@ -3281,86 +3281,229 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
   var src_default = alpine_default;
   var module_default = src_default;
 
-  // src/wcFactory.ts
-  function wcFactory(name, template) {
+  // src/WebComponentFactory.ts
+  function WebComponentFactory(name, template2, xDataFactory = () => ({}), ...args) {
     let temp;
-    if (typeof template === "string") {
+    if (typeof template2 === "string") {
       temp = document.createElement("template");
-      temp.innerHTML = template;
+      temp.innerHTML = template2;
     } else {
-      temp = template;
+      temp = template2;
     }
     class CustomElement extends HTMLElement {
       root;
-      value;
-      state;
-      masterUpdate = false;
-      static observedAttributes = ["val"];
+      data;
+      _value = "";
+      get value() {
+        return this._value;
+      }
+      set value(val) {
+        if (this._value === val) return;
+        this._value = val;
+        if (this.data?.$val !== void 0) {
+          this.data.$val = val;
+        }
+        this.dispatchEvent(new Event("input"));
+      }
       constructor() {
         super();
         this.root = this.attachShadow({ mode: "open" });
-        const model = this.getAttribute("x-model");
-        model && this.setAttribute(":val", `JSON.stringify(${model})`);
-        const updateModel = () => {
-          this.dispatchEvent(new Event("input"));
-        };
-        this.state = module_default.reactive({
-          data: module_default.reactive({})
-        });
-        let firstRun = true;
-        module_default.effect(() => {
-          JSON.stringify(this.state.data);
-          if (firstRun || this.masterUpdate) {
-            firstRun = false;
-            return;
-          }
-          this.value = module_default.raw(this.state.data);
-          updateModel();
-        });
-      }
-      attributeChangedCallback(_, __, newValue) {
-        this.masterUpdate = true;
-        Object.assign(this.state.data, JSON.parse(newValue));
-        this.masterUpdate = false;
       }
       connectedCallback() {
         this.root.appendChild(temp.content.cloneNode(true));
-        module_default.addScopeToNode(this.root, this.state);
+        this.data = module_default.reactive({
+          $val: this._value,
+          ...xDataFactory(...args)
+        });
+        module_default.effect(() => {
+          if (this.data.$val !== this._value) {
+            this._value = this.data.$val;
+            this.dispatchEvent(new Event("input"));
+          }
+        });
+        module_default.addScopeToNode(this.root, this.data);
         module_default.initTree(this.root);
       }
     }
     customElements.define(name, CustomElement);
   }
 
-  // example/index.ts
+  // example/components/shuffle.ts
   var html = (
+    /*html */
+    `
+<section >
+<p x-text="$val"></p>
+<button @click="$val = shuffle($val)">Shuffle</button>
+</section>
+`
+  );
+  WebComponentFactory("wc-shuffle", html, () => ({
+    shuffle(s) {
+      const characters = s.split("");
+      for (let i = characters.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [characters[i], characters[j]] = [characters[j], characters[i]];
+      }
+      s = characters.join("");
+      return characters.join("");
+    }
+  }));
+
+  // example/components/colorpicker.ts
+  var html2 = (
     /*html*/
     `
-<section>
+<style>
+    .container{
+        display: grid;
+    }
+    .color-wheel {
+        --saturation: 100%;
+        --lightness: 50%;
+        width: 150%;
+        position : float ;
+        aspect-ratio: 1/1;
+        border-radius: 50%;
+        background: conic-gradient(
+  from 90deg,
+  hsl(0, var(--saturation), var(--lightness)),
+  hsl(60, var(--saturation), var(--lightness)),
+  hsl(120, var(--saturation), var(--lightness)),
+  hsl(180, var(--saturation), var(--lightness)),
+  hsl(240, var(--saturation), var(--lightness)),
+  hsl(300, var(--saturation), var(--lightness)),
+  hsl(360, var(--saturation), var(--lightness))
+        );
+    }
+    .color-info{
+        width : 95%;
+        padding: 5%;
+        aspect-ratio : 1/1;
+        grid-area: 1/1;
+    }
+
+</style>
+<div class="container"
+>
+    <template x-if="open">
+    <div
+    style="transform: translate(50% , 25%);grid-area : 1/1"
+    >
+        <div 
+            class="color-wheel"
+            @click="toggle;"
+            @mousemove="$val = getColor($event)">
+        </div>
+        <div class="slider-container">
+            <label  for="saturationSlider">Saturation: </label>
+            <input x-model="saturation" type="range" id="saturationSlider" class="slider" min="0" max="100" value="100">
+        </div>
+        <div class="slider-container">
+            <label for="lightnessSlider">Lightness: </label>
+            <input x-model="light" type="range" id="lightnessSlider" class="slider" min="0" max="100" value="50">
+        </div>
+    </div>
+    </template>
+        <div class="color-info"
+        @click="toggle"
+        :style="{backgroundColor : $val}"
+        >
+        <span x-text="$val" 
+        :style="{color: light < 60 ? 'white' : 'black' , fontWeight : 'bold'} " ></span>
+    </div>
+</div>
+`
+  );
+  var data2 = {
+    open: false,
+    hue: 100,
+    saturation: 100,
+    light: 50,
+    toggle() {
+      this.open = !this.open;
+    },
+    getColor(event) {
+      const colorWheel = event.currentTarget;
+      const rect = colorWheel?.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const dx = x - centerX;
+      const dy = y - centerY;
+      const angleInRadians = Math.atan2(dy, dx);
+      let angleInDegrees = angleInRadians * (180 / Math.PI);
+      this.hue = (angleInDegrees + 360) % 360;
+      colorWheel.style.setProperty("--saturation", this.saturation + "%");
+      colorWheel.style.setProperty("--lightness", this.light + "%");
+      return this.hslToHex();
+    },
+    hslToHex() {
+      const l = this.light / 100;
+      const a = this.saturation * Math.min(l, 1 - l) / 100;
+      const f = (n) => {
+        const k = (n + this.hue / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, "0");
+      };
+      return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+  };
+  WebComponentFactory("color-picker", html2, () => data2);
+
+  // example/index.ts
+  var html3 = (
+    /*html*/
+    `
+<section x-data="{open : false}">
 <style>
     *{
-        background-color: red;
-    }
+background-color: red;    }
 </style>
 <div class="header">
 <slot name="header"></slot>
 </div>
 <hr />
-<slot name="content" class="content"></slot>
+<slot  x-transition name="content" class="content"></slot>
+<button @click="open=!open" x-text="open?'Hide':'Expand'">Click</button>
+<p x-show="open">As you can see you can still do some Alpine JS magic inside the components.</p>
 
 <fieldset>
     <label for='text'>Inner Text Input:</label>
-    <input type="text" x-model="data.text" id="input" placeholder=''>
+    <input type="text" x-model="$val.text" id="input" placeholder=''>
 </fieldset>
 
 <fieldset>
     <label for='number'>Inner Text Input:</label>
-    <input type="number" x-model="data.num" id="input" placeholder=''>
+    <input type="number" x-model="$val.num" id="input" placeholder=''>
 </fieldset>
 
 </section>
 `
   );
-  wcFactory("wc-test", html);
+  WebComponentFactory("wc-test", html3);
+  module_default.data("data", () => ({
+    text: "AlpineJS + WebComponents",
+    num: 106,
+    color: "#202099"
+  }));
+  var template = `
+  <style>
+    /* Component styles */
+    button {
+      background: blue;
+      color: white;
+    }
+  </style>
+  <button @click="increment">
+    Count: <span x-text="$val"></span>
+  </button>
+`;
+  WebComponentFactory("custom-input", template, () => ({
+    increment() {
+      this.$val++;
+    }
+  }));
   module_default.start();
 })();
