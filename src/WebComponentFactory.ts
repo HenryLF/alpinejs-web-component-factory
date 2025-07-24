@@ -41,10 +41,14 @@ export function WebComponentFactory(
     connectedCallback() {
       this.root.appendChild(temp.content.cloneNode(true));
 
-      // Initialize reactive state with $val
+      const xData = xDataFactory(...args);
+      if (Object.hasOwn(xData, "init") && typeof xData.init == "function") {
+        xData.init();
+      }
       this.data = Alpine.reactive({
         $val: this._value,
-        ...xDataFactory(...args),
+        $component: this,
+        ...xData,
       });
 
       // Sync from Alpine to component

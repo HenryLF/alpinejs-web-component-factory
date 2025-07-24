@@ -28,9 +28,14 @@ export function WebComponentFactory(name, template, xDataFactory = () => ({}), .
     }
     connectedCallback() {
       this.root.appendChild(temp.content.cloneNode(true));
+      const xData = xDataFactory(...args);
+      if (Object.hasOwn(xData, "init") && typeof xData.init == "function") {
+        xData.init();
+      }
       this.data = Alpine.reactive({
         $val: this._value,
-        ...xDataFactory(...args)
+        $component: this,
+        ...xData
       });
       Alpine.effect(() => {
         if (this.data.$val !== this._value) {

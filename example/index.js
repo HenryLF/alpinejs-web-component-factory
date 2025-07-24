@@ -3311,9 +3311,14 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
       }
       connectedCallback() {
         this.root.appendChild(temp.content.cloneNode(true));
+        const xData = xDataFactory(...args);
+        if (Object.hasOwn(xData, "init") && typeof xData.init == "function") {
+          xData.init();
+        }
         this.data = module_default.reactive({
           $val: this._value,
-          ...xDataFactory(...args)
+          $component: this,
+          ...xData
         });
         module_default.effect(() => {
           if (this.data.$val !== this._value) {
@@ -3501,7 +3506,13 @@ background-color: red;    }
   </button>
 `;
   WebComponentFactory("custom-input", template, () => ({
+    k: 0,
+    init() {
+      this.k = 1;
+      console.log(this.k);
+    },
     increment() {
+      console.log("hey", this.$component, this.k);
       this.$val++;
     }
   }));

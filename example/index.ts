@@ -39,7 +39,30 @@ Alpine.data("data", () => ({
   color: "#202099",
 }));
 
+const template = `
+  <style>
+    /* Component styles */
+    button {
+      background: blue;
+      color: white;
+    }
+  </style>
+  <button @click="increment">
+    Count: <span x-text="$val"></span>
+  </button>
+`;
 
+WebComponentFactory("custom-input", template, () => ({
+  k: 0,
+  init() {
+    this.k = 1;
+    console.log(this.k);
+  },
+  increment() {
+    console.log("hey", this.$component, this.k);
+    this.$val++; // Update bound value
+  },
+}));
 //initialize with the component name and a HTML string/a template (getElementById)
 
 Alpine.start();
