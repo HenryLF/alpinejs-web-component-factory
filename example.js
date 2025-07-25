@@ -263,10 +263,10 @@
   function scope(node) {
     return mergeProxies(closestDataStack(node));
   }
-  function addScopeToNode(node, data22, referenceNode) {
-    node._x_dataStack = [data22, ...closestDataStack(referenceNode || node)];
+  function addScopeToNode(node, data2, referenceNode) {
+    node._x_dataStack = [data2, ...closestDataStack(referenceNode || node)];
     return () => {
-      node._x_dataStack = node._x_dataStack.filter((i) => i !== data22);
+      node._x_dataStack = node._x_dataStack.filter((i) => i !== data2);
     };
   }
   function closestDataStack(node) {
@@ -324,7 +324,7 @@
       return acc;
     }, {});
   }
-  function initInterceptors(data22) {
+  function initInterceptors(data2) {
     let isObject2 = (val) => typeof val === "object" && !Array.isArray(val) && val !== null;
     let recurse = (obj, basePath = "") => {
       Object.entries(Object.getOwnPropertyDescriptors(obj)).forEach(([key, { value, enumerable }]) => {
@@ -334,7 +334,7 @@
           return;
         let path = basePath === "" ? key : `${basePath}.${key}`;
         if (typeof value === "object" && value !== null && value._x_interceptor) {
-          obj[key] = value.initialize(data22, path, key);
+          obj[key] = value.initialize(data2, path, key);
         } else {
           if (isObject2(value) && value !== obj && !(value instanceof Element)) {
             recurse(value, path);
@@ -342,25 +342,25 @@
         }
       });
     };
-    return recurse(data22);
+    return recurse(data2);
   }
   function interceptor(callback, mutateObj = () => {
   }) {
     let obj = {
       initialValue: void 0,
       _x_interceptor: true,
-      initialize(data22, path, key) {
-        return callback(this.initialValue, () => get(data22, path), (value) => set(data22, path, value), path, key);
+      initialize(data2, path, key) {
+        return callback(this.initialValue, () => get(data2, path), (value) => set(data2, path, value), path, key);
       }
     };
     mutateObj(obj);
     return (initialValue) => {
       if (typeof initialValue === "object" && initialValue !== null && initialValue._x_interceptor) {
         let initialize = obj.initialize.bind(obj);
-        obj.initialize = (data22, path, key) => {
-          let innerValue = initialValue.initialize(data22, path, key);
+        obj.initialize = (data2, path, key) => {
+          let innerValue = initialValue.initialize(data2, path, key);
           obj.initialValue = innerValue;
-          return initialize(data22, path, key);
+          return initialize(data2, path, key);
         };
       } else {
         obj.initialValue = initialValue;
@@ -2938,11 +2938,11 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
     injectMagics(magicContext, el);
     let dataProviderContext = {};
     injectDataProviders(dataProviderContext, magicContext);
-    let data22 = evaluate(el, expression, { scope: dataProviderContext });
-    if (data22 === void 0 || data22 === true)
-      data22 = {};
-    injectMagics(data22, el);
-    let reactiveData = reactive(data22);
+    let data2 = evaluate(el, expression, { scope: dataProviderContext });
+    if (data2 === void 0 || data2 === true)
+      data2 = {};
+    injectMagics(data2, el);
+    let reactiveData = reactive(data2);
     initInterceptors(reactiveData);
     let undo = addScopeToNode(el, reactiveData);
     reactiveData["init"] && evaluate(el, reactiveData["init"]);
@@ -3333,219 +3333,18 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
     customElements.define(name, CustomElement);
   }
 
-  // example/components/shuffle.ts
-  var html = (
-    /*html */
-    `
-<section >
-<p x-text="$val"></p>
-<button @click="$val = shuffle($val)">Shuffle</button>
-</section>
-`
-  );
-  WebComponentFactory("wc-shuffle", html, () => ({
-    shuffle(s) {
-      const characters = s.split("");
-      for (let i = characters.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [characters[i], characters[j]] = [characters[j], characters[i]];
-      }
-      s = characters.join("");
-      return characters.join("");
-    }
-  }));
-
-  // example/components/colorpicker.ts
-  var html2 = (
+  // example.ts
+  WebComponentFactory(
+    "increment-button",
     /*html*/
     `
-<style>
-
-    .container{
-        display: grid;
-        position : relative;
-        height : var(--color-picker-height,60px);
-        width : var(--color-picker-width,60px);
-        font-size : var(--color-picker-fontsize,0.75rem);
-    
-    }
-    .pop-up{
-        top:calc(var(--color-picker-popup-top,0)*100%);
-        left:calc(var(--color-picker-popup-left,1)*100%);
-        z-index:10;
-        position : absolute;
-    }
-    .color-wheel {
-        --saturation: 100%;
-        --lightness: 50%;
-        position : relative;
-        width: calc(var(--color-picker-width,60px)*var(--color-picker-wheel-ratio,1.5));
-        aspect-ratio: 1/1;
-        border-radius: 50%;
-        background: conic-gradient(
-  from 90deg,
-  hsl(0, var(--saturation), var(--lightness)),
-  hsl(60, var(--saturation), var(--lightness)),
-  hsl(120, var(--saturation), var(--lightness)),
-  hsl(180, var(--saturation), var(--lightness)),
-  hsl(240, var(--saturation), var(--lightness)),
-  hsl(300, var(--saturation), var(--lightness)),
-  hsl(360, var(--saturation), var(--lightness))
-        );
-    }
-    .color-info{
-        height : calc(var(--color-picker-height,60px)*.95 - var(--color-picker-width,60px)*.05);
-        width : calc(var(--color-picker-width,60px)*.95);
-        padding: calc(var(--color-picker-width,60px)*.05);
-        z-index:0;
-        position : absolute;
-        top : 0;
-        left : 0;
-    }
-    input{
-        width: calc(var(--color-picker-width,60px)*var(--color-wheel-ratio,1.5));
-    }
-
-</style>
-<div class="container"
->
-<div class="color-info"
-@click="toggle"
-:style="{backgroundColor : $val}"
->
-<span x-text="$val" 
-:style="{color: light < 60 ? 'white' : 'black' , fontWeight : 'bold'} " ></span>
-</div>
-<template x-if="open">
-<div
-style="grid-area : 1/1"
-class="pop-up"
->
-    <div 
-        class="color-wheel"
-        @click="toggle;"
-        id="wheel"
-        
-        @mousemove="getColor">
-    </div>
-    <div class="slider-container">
-        <label  for="saturationSlider">Saturation: </label>
-        <input x-model="saturation" type="range" id="saturationSlider" class="slider" min="0" max="100" value="100"
-        
-        @change=updateSaturation>
-    </div>
-    <div class="slider-container">
-        <label for="lightnessSlider">Lightness: </label>
-        <input x-model="light" type="range" id="lightnessSlider" class="slider" min="0" max="100" value="50"
-        @change="updateLightness"
-        >
-    </div>
-</div>
-</template>
-</div>
-`
-  );
-  var data2 = {
-    open: false,
-    hue: 100,
-    saturation: 100,
-    light: 50,
-    toggle() {
-      this.open = !this.open;
-    },
-    getColor(event) {
-      const colorWheel = event.currentTarget;
-      const rect = colorWheel?.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const dx = x - centerX;
-      const dy = y - centerY;
-      const angleInRadians = Math.atan2(dy, dx);
-      let angleInDegrees = angleInRadians * (180 / Math.PI);
-      this.hue = (angleInDegrees + 360) % 360;
-      this.updateHexValue();
-    },
-    updateLightness() {
-      this.$("#wheel").style.setProperty("--lightness", this.light + "%");
-      this.updateHexValue();
-    },
-    updateSaturation() {
-      this.$("#wheel")?.style.setProperty("--saturation", this.saturation + "%");
-      this.updateHexValue();
-    },
-    updateHexValue() {
-      const l = this.light / 100;
-      const a = this.saturation * Math.min(l, 1 - l) / 100;
-      const f = (n) => {
-        const k = (n + this.hue / 30) % 12;
-        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, "0");
-      };
-      this.$val = `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
-    }
-  };
-  WebComponentFactory("color-picker", html2, () => data2);
-
-  // example/index.ts
-  var html3 = (
-    /*html*/
-    `
-<section x-data="{open : false}">
-<style>
-    *{
-background-color: red;    }
-</style>
-<div class="header">
-<slot name="header"></slot>
-</div>
-<hr />
-<slot  x-transition name="content" class="content"></slot>
-<button @click="open=!open" x-text="open?'Hide':'Expand'">Click</button>
-<p x-show="open">As you can see you can still do some Alpine JS magic inside the components.</p>
-
-<fieldset>
-    <label for='text'>Inner Text Input:</label>
-    <input type="text" x-model="$val.text" id="input" placeholder=''>
-</fieldset>
-
-<fieldset>
-    <label for='number'>Inner Text Input:</label>
-    <input type="number" x-model="$val.num" id="input" placeholder=''>
-</fieldset>
-
-</section>
-`
-  );
-  WebComponentFactory("wc-test", html3);
-  module_default.data("data", () => ({
-    text: "AlpineJS + WebComponents",
-    num: 106,
-    color: "#202099"
-  }));
-  var component = (
-    /*html*/
-    `
-  <style>
-    button{
-      background-color : var(--increment-btn-color , red)
-    }
-    </style>
-  <button @click="increment">
+  <button @click="$val++">
     Count: <span x-text="$val"></span>
   </button>
 `
   );
-  WebComponentFactory("custom-input", component, () => ({
-    k: 0,
-    init() {
-      this.k = 1;
-      console.log(this.k);
-    },
-    increment() {
-      this.$val++;
-    }
+  module_default.data("data", () => ({
+    counter: 0
   }));
   module_default.start();
 })();

@@ -2,14 +2,26 @@ import { WebComponentFactory } from "../../src/WebComponentFactory";
 
 const html = /*html*/ `
 <style>
+
     .container{
         display: grid;
+        position : relative;
+        height : var(--color-picker-height,60px);
+        width : var(--color-picker-width,60px);
+        font-size : var(--color-picker-fontsize,0.75rem);
+    
+    }
+    .pop-up{
+        top:calc(var(--color-picker-popup-top,0)*100%);
+        left:calc(var(--color-picker-popup-left,1)*100%);
+        z-index:10;
+        position : absolute;
     }
     .color-wheel {
         --saturation: 100%;
         --lightness: 50%;
-        width: 150%;
-        position : float ;
+        position : relative;
+        width: calc(var(--color-picker-width,60px)*var(--color-picker-wheel-ratio,1.5));
         aspect-ratio: 1/1;
         border-radius: 50%;
         background: conic-gradient(
@@ -24,41 +36,54 @@ const html = /*html*/ `
         );
     }
     .color-info{
-        width : 95%;
-        padding: 5%;
-        aspect-ratio : 1/1;
-        grid-area: 1/1;
+        height : calc(var(--color-picker-height,60px)*.95 - var(--color-picker-width,60px)*.05);
+        width : calc(var(--color-picker-width,60px)*.95);
+        padding: calc(var(--color-picker-width,60px)*.05);
+        z-index:0;
+        position : absolute;
+        top : 0;
+        left : 0;
+    }
+    input{
+        width: calc(var(--color-picker-width,60px)*var(--color-wheel-ratio,1.5));
     }
 
 </style>
 <div class="container"
 >
-    <template x-if="open">
-    <div
-    style="transform: translate(50% , 25%);grid-area : 1/1"
-    >
-        <div 
-            class="color-wheel"
-            @click="toggle;"
-            @mousemove="$val = getColor($event)">
-        </div>
-        <div class="slider-container">
-            <label  for="saturationSlider">Saturation: </label>
-            <input x-model="saturation" type="range" id="saturationSlider" class="slider" min="0" max="100" value="100">
-        </div>
-        <div class="slider-container">
-            <label for="lightnessSlider">Lightness: </label>
-            <input x-model="light" type="range" id="lightnessSlider" class="slider" min="0" max="100" value="50">
-        </div>
+<div class="color-info"
+@click="toggle"
+:style="{backgroundColor : $val}"
+>
+<span x-text="$val" 
+:style="{color: light < 60 ? 'white' : 'black' , fontWeight : 'bold'} " ></span>
+</div>
+<template x-if="open">
+<div
+style="grid-area : 1/1"
+class="pop-up"
+>
+    <div 
+        class="color-wheel"
+        @click="toggle;"
+        id="wheel"
+        
+        @mousemove="getColor">
     </div>
-    </template>
-        <div class="color-info"
-        @click="toggle"
-        :style="{backgroundColor : $val}"
+    <div class="slider-container">
+        <label  for="saturationSlider">Saturation: </label>
+        <input x-model="saturation" type="range" id="saturationSlider" class="slider" min="0" max="100" value="100"
+        
+        @change=updateSaturation>
+    </div>
+    <div class="slider-container">
+        <label for="lightnessSlider">Lightness: </label>
+        <input x-model="light" type="range" id="lightnessSlider" class="slider" min="0" max="100" value="50"
+        @change="updateLightness"
         >
-        <span x-text="$val" 
-        :style="{color: light < 60 ? 'white' : 'black' , fontWeight : 'bold'} " ></span>
     </div>
+</div>
+</template>
 </div>
 `;
 const data = {
@@ -86,13 +111,17 @@ const data = {
     // Normalize to 0-360 range
     this.hue = (angleInDegrees + 360) % 360;
 
-    // Update CSS variables
-    colorWheel.style.setProperty("--saturation", this.saturation + "%");
-    colorWheel.style.setProperty("--lightness", this.light + "%");
-
-    return this.hslToHex();
+    this.updateHexValue();
   },
-  hslToHex() {
+  updateLightness() {
+    this.$("#wheel").style.setProperty("--lightness", this.light + "%");
+    this.updateHexValue();
+  },
+  updateSaturation() {
+    this.$("#wheel")?.style.setProperty("--saturation", this.saturation + "%");
+    this.updateHexValue();
+  },
+  updateHexValue() {
     const l = this.light / 100;
     const a = (this.saturation * Math.min(l, 1 - l)) / 100;
     const f = (n: number) => {
@@ -102,7 +131,7 @@ const data = {
         .toString(16)
         .padStart(2, "0");
     };
-    return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    this.$val = `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
   },
 };
 

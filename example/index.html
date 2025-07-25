@@ -9,7 +9,10 @@
       body {
         color: black;
         --color-components: rgb(96, 96, 221);
+        --color-picker-width: 100px;
+        --color-picker-height: 100px;
       }
+
       section,
       h1,
       section > * {
@@ -63,9 +66,9 @@
     <wc-shuffle x-model="text"> </wc-shuffle>
     <color-picker
       x-model="color"
-      style="display: inline-block; width: 50px; aspect-ratio: 1/1"
     ></color-picker>
 
-    <custom-input x-model="num"></custom-input>
+    <custom-input 
+    style="--increment-btn-color : yellow" x-model="num"></custom-input>
   </body>
 </html>

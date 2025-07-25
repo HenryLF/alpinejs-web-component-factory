@@ -1,72 +1,51 @@
 import Alpine from "alpinejs";
-
-export function WebComponentFactory(
-  name: string,
-  template: HTMLTemplateElement | string,
-  xDataFactory: (...args: any[]) => object = () => ({}),
-  xDataFactoryArgs: any[] = []
-) {
-  let temp: HTMLTemplateElement;
+export function WebComponentFactory(name, template, xDataFactory = () => ({}), xDataFactoryArgs = []) {
+  let temp;
   if (typeof template === "string") {
     temp = document.createElement("template");
     temp.innerHTML = template;
   } else {
     temp = template;
   }
-
   class CustomElement extends HTMLElement {
-    root: HTMLElement;
-    data: any;
-    private _value = "";
-
+    root;
+    data;
+    _value = "";
     get value() {
       return this._value;
     }
-
     set value(val) {
       if (this._value === val) return;
       this._value = val;
       this.data.$val = val;
       this.dispatchEvent(new Event("input"));
     }
-
     constructor() {
       super();
-      //@ts-expect-error
       this.root = this.attachShadow({ mode: "closed" });
     }
-
     connectedCallback() {
       this.root.appendChild(temp.content.cloneNode(true));
-
-      /*Initialize Alpine data object */
       const xData = xDataFactory(...xDataFactoryArgs);
-      //@ts-expect-error
       if (Object.hasOwn(xData, "init") && typeof xData.init == "function") {
-        //@ts-expect-error
         xData.init();
       }
-      /*Add custom component magic*/
       this.data = Alpine.reactive({
         $val: this.value,
         $component: this,
-        $$: (arg: string) => this.root.querySelectorAll(arg),
-        $: (arg: string) => this.root.querySelector(arg),
-        ...xData,
+        $$: (arg) => this.root.querySelectorAll(arg),
+        $: (arg) => this.root.querySelector(arg),
+        ...xData
       });
-
-      /* Get update from the $val magic. */
       Alpine.effect(() => {
         if (this.data.$val !== this._value) {
           this._value = this.data.$val;
           this.dispatchEvent(new Event("input"));
         }
       });
-
       Alpine.addScopeToNode(this.root, this.data);
       Alpine.initTree(this.root);
     }
   }
-
   customElements.define(name, CustomElement);
 }
